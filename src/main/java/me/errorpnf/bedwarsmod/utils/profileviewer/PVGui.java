@@ -5,6 +5,7 @@ import com.mojang.authlib.GameProfile;
 import me.errorpnf.bedwarsmod.data.BedwarsExperience;
 import me.errorpnf.bedwarsmod.data.GameModeEnum;
 import me.errorpnf.bedwarsmod.data.stats.Stats;
+import me.errorpnf.bedwarsmod.mixin.AbstractClientPlayerAccessor;
 import me.errorpnf.bedwarsmod.utils.JsonUtils;
 import me.errorpnf.bedwarsmod.utils.RenderUtils;
 import me.errorpnf.bedwarsmod.utils.StatUtils;
@@ -14,11 +15,11 @@ import me.errorpnf.bedwarsmod.utils.formatting.RankUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EnumPlayerModelParts;
 import net.minecraft.util.ResourceLocation;
@@ -255,22 +256,12 @@ public class PVGui extends GuiScreen {
                 }
             }
 
-            entityPlayer = new EntityOtherPlayerMP(Minecraft.getMinecraft().theWorld, fakeProfile) {
-                @Override
-                public ResourceLocation getLocationCape() {
-                    return playerLocationCape == null ? super.getLocationCape() : playerLocationCape;
-                }
+            entityPlayer = new EntityOtherPlayerMP(Minecraft.getMinecraft().theWorld, fakeProfile);
 
-                @Override
-                public ResourceLocation getLocationSkin() {
-                    return playerLocationSkin == null ? DefaultPlayerSkin.getDefaultSkin(this.getUniqueID()) : playerLocationSkin;
-                }
+            ((AbstractClientPlayerAccessor) entityPlayer).setPlayerInfo(new NetworkPlayerInfo(fakeProfile));
 
-                @Override
-                public String getSkinType() {
-                    return skinType == null ? DefaultPlayerSkin.getSkinType(this.getUniqueID()) : skinType;
-                }
-            };
+            entityPlayer.getLocationSkin();
+
         } else {
             byte b = 0;
             for (EnumPlayerModelParts part : EnumPlayerModelParts.values()) {
